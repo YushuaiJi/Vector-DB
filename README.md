@@ -1,21 +1,20 @@
 # WhuDatabase
 
-# 这是什么
+# WhuDatabase是什么
 
-移植到 Android 的 WhuDatabase 数据库
-100% 离线、可移植且独立于 SQLite。
+可部署在Android的移动端时空向量数据库
+100%离线、可移植且独立于SQLite。
 
 # 什么时候需要它？
-当您计划存储多维点数据或多维向量并进行查询处理时。
-当您需要在 Android 设备上部署、收集、处理和快速查询少量到大量几何数据（点、折线、多边形、多多边形等）时。
-当您希望 100% 独立于任何服务器/云后端时。
+计划存储多种模态的向量并进行查询更新操作。
+在Android设备上部署、收集、处理和快速查询大量与时空相关的向量数据，已经大量由向量点生成的几何数据（点、折线、多边形、多多边形等）时。
+当大量数据集需要查询或插入更新数据集速度快时。
 
 # 入门
-工作原理与SQLite基本相同，使用SQL语句进行建表，插入数据，以及查询。
-可以跟着以下示例来学习并熟悉WhuDatabase。
+代码行文方式与SQLite基本相同，继承SQL语句进行建表，插入数据，以及查询。
 
-## 示例一
-多维数据的插入和查询，以十维点为例。
+## 示例1
+向量数据的更新（以插入为例）和查询，以向量长度为10的时候为例。
 ### 创建表和插入数据
 
 ```java
@@ -35,6 +34,8 @@ CREATE TABLE ten_dim_points (
 );
 
 // 插入数据
+// 面向海量数据插入时，面向GPU参与的移动端设备，开放GPU权限会使WhuDatabase调用批量数据插入算法，提高插入效率。
+// 面向海量数据插入时，面向CPU参与的移动端设备，WhuDatabase会采用多线程插入的方式并采取替罪羊策略自动化平衡索引。
 INSERT INTO ten_dim_points (dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10) 
 VALUES (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);
 INSERT INTO ten_dim_points (dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10) 
@@ -56,11 +57,15 @@ SELECT * FROM ten_dim_points WHERE dim1 = 1.0 AND dim2 = 2.0;
 ```
 
 范围查询
-
+// 面向海量查询时，WhuDatabase在所设计的索引上会训练小型自动化选择搜寻策略模型，选择最优的查询策略并并行处理提高查询效率。
+// 单次查询服从SQLite查询方法。
 ```java
 SELECT * FROM ten_dim_points WHERE dim1 BETWEEN 1.0 AND 2.0 AND dim2 BETWEEN 2.0 AND 3.0;
 ```
-查找距离给定点最近的几个点（k-最近邻）
+
+k-最近邻
+
+//面对k-最近邻查询，需自身定义查询的距离计算公式（如欧式距离），并进行查询。当面对小数据集时，采用遍历的方式寻找数据点。当面对大数据且稳定的k近邻查询的时，我们构建多叉平衡KD树改进查询效率。
 
 ```java
 // 求距离(3, 3, 3, 3, 3, 3, 3, 3, 3, 3)最近的点
@@ -92,6 +97,7 @@ FROM
 ORDER BY 
     distance
 LIMIT 2; // 返回最近的两个点
+
 ```
 聚类分析，基于 dim1 和 dim2 的分组和聚合来分析不同的簇
 
@@ -200,7 +206,7 @@ GROUP BY
 ```
 
 ## 示例四
-几何对象的查询和处理。
+面向时空短向量生成的几何对象的查询和处理，WhuDatabase数据库支持自定义的查询
 ### 创建表和插入数据
 ```java
 // 创建表格
@@ -259,7 +265,7 @@ SELECT Distance(
 SELECT name FROM places WHERE Distance(geom, GeomFromText('POINT(1 1)', 4326)) < 2.0;
 ```
 ### 几何操作
-计算几何对象的缓冲区
+//加快数据分析，计算，和机器学习模型训练运算效率
 
 ```java
 SELECT id, name, AsText(Buffer(geom, 1.0)) AS buffered_geom FROM places;
@@ -271,18 +277,6 @@ SELECT id, name, AsText(ConvexHull(geom)) AS convex_hull_geom FROM places;
 ```
 # 其他常见问题
 ## 什么是 WhuDatabase？
-简单来说：WhuDatabase= SQLite + 高级地理空间支持。
-WhuDatabase是 SQLite 的地理空间扩展。它是一组用 C 编写的库，用于扩展 SQLite 的几何数据类型和许多基于几何数据的 SQL 函数。
+简单来说：WhuDatabase= 查询效率改进的SQLite + 高效大规模的向量搜索引擎 + 高级地理空间支持。
 ## 它使用 JDBC 吗？
 否，它使用cursors - 建议使用轻量级方法来访问 Android 平台中使用的 SQL，而不是更重的 JDBC。
-## 它支持64位架构吗？
-是的，它支持 arm64-v8a 和 x86_64。
-## 当前打包了哪些库？
- - SQLite 3.15.1
- - Whu 2.0.1
- - GEOS 3.4.2
- - Proj4 4.8.0
- - lzma 5.2.1
- - iconv 1.13
- - xml2 2.9.2
- - freexl 1.0.2
