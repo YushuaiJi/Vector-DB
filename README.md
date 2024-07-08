@@ -36,7 +36,6 @@ CREATE TABLE ten_dim_points (
 // 插入数据
 
 面向海量数据插入时，面向GPU参与的移动端设备，开放GPU权限会使WhuDatabase调用批量数据插入算法，提高插入效率。
-
 面向海量数据插入时，面向CPU参与的移动端设备，WhuDatabase会采用多线程插入的方式并采取替罪羊策略自动化平衡索引。
 INSERT INTO ten_dim_points (dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10) 
 VALUES (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);
@@ -59,15 +58,15 @@ SELECT * FROM ten_dim_points WHERE dim1 = 1.0 AND dim2 = 2.0;
 ```
 
 范围查询
-// 面向海量查询时，WhuDatabase在所设计的索引上会训练小型自动化选择搜寻策略模型，选择最优的查询策略并并行处理提高查询效率。
-// 单次查询服从SQLite查询方法。
+面向海量查询时，WhuDatabase在所设计的索引上会训练小型自动化选择搜寻策略模型，选择最优的查询策略并并行处理提高查询效率。
+单次查询服从SQLite查询方法。
 ```java
 SELECT * FROM ten_dim_points WHERE dim1 BETWEEN 1.0 AND 2.0 AND dim2 BETWEEN 2.0 AND 3.0;
 ```
 
 k-最近邻
 
-//面对k-最近邻查询，需自身定义查询的距离计算公式（如欧式距离），并进行查询。当面对小数据集时，采用遍历的方式寻找数据点。当面对大数据且稳定的k近邻查询的时，我们构建多叉平衡KD树改进查询效率。
+面对k-最近邻查询，需自身定义查询的距离计算公式（如欧式距离），并进行查询。当面对小数据集时，采用遍历的方式寻找数据点。当面对大数据且稳定的k近邻查询的时，我们构建多叉平衡KD树改进查询效率。
 
 ```java
 // 求距离(3, 3, 3, 3, 3, 3, 3, 3, 3, 3)最近的点
@@ -267,7 +266,7 @@ SELECT Distance(
 SELECT name FROM places WHERE Distance(geom, GeomFromText('POINT(1 1)', 4326)) < 2.0;
 ```
 ### 几何操作
-//加快数据分析，计算，和机器学习模型训练运算效率
+加快数据分析，计算，和机器学习模型训练运算效率
 
 ```java
 SELECT id, name, AsText(Buffer(geom, 1.0)) AS buffered_geom FROM places;
