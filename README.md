@@ -34,8 +34,10 @@ CREATE TABLE ten_dim_points (
 );
 
 // 插入数据
-// 面向海量数据插入时，面向GPU参与的移动端设备，开放GPU权限会使WhuDatabase调用批量数据插入算法，提高插入效率。
-// 面向海量数据插入时，面向CPU参与的移动端设备，WhuDatabase会采用多线程插入的方式并采取替罪羊策略自动化平衡索引。
+
+面向海量数据插入时，面向GPU参与的移动端设备，开放GPU权限会使WhuDatabase调用批量数据插入算法，提高插入效率。
+
+面向海量数据插入时，面向CPU参与的移动端设备，WhuDatabase会采用多线程插入的方式并采取替罪羊策略自动化平衡索引。
 INSERT INTO ten_dim_points (dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10) 
 VALUES (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);
 INSERT INTO ten_dim_points (dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10) 
