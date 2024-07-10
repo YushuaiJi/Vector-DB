@@ -1,21 +1,26 @@
-# WhuDatabase
 
-# WhuDatabase是什么
+## WhuDatabase是什么
 
 可部署在Android的移动端时空向量数据库
 100%离线、可移植且独立于SQLite。
 
-# 什么时候需要它？
+
+
+## 什么时候需要它？
 计划存储多种模态的向量并进行查询更新操作。
 在Android设备上部署、收集、处理和快速查询大量与时空相关的向量数据，已经大量由向量点生成的几何数据（点、折线、多边形、多多边形等）时。
 当大量数据集需要查询或插入更新数据集速度快时。
 
-# 入门
+
+
+## 入门
 代码行文方式与SQLite基本相同，继承SQL语句进行建表，插入数据，以及查询。
 
-## 示例1
-向量数据的更新（以插入为例）和查询，以向量长度为10的时候为例。
-### 创建表和插入数据
+#### 示例一
+
+向量数据的处理（插入、更新、删除）和查询，以向量长度为10的时候为例。
+
+**创建表和插入数据**
 
 ```java
 // 创建表
@@ -38,13 +43,23 @@ CREATE TABLE ten_dim_points (
 面向海量数据插入时，面向GPU参与的移动端设备，开放GPU权限会使WhuDatabase调用批量数据插入算法，提高插入效率。
 面向海量数据插入时，面向CPU参与的移动端设备，WhuDatabase会采用多线程插入的方式并采取替罪羊策略自动化平衡索引。
 INSERT INTO ten_dim_points (dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10) 
-VALUES (1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);
-INSERT INTO ten_dim_points (dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10) 
-VALUES (2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0);
-INSERT INTO ten_dim_points (dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10) 
-VALUES (3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0);
+VALUES 
+(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0),
+(2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0),
+(3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0);
+
+
+// 更新数据 (更新 id 为 1 的记录，将 dim1 的值改为 10.0，将 dim2 的值改为 20.0)
+UPDATE ten_dim_points
+SET dim1 = 10.0, dim2 = 20.0
+WHERE id = 1;
+
+// 删除数据 (删除 id 为 2 的记录)
+DELETE FROM ten_dim_points
+WHERE id = 2;
 ```
-### 数据查询
+**数据查询**
+
 查询所有数据
 
 ```java
@@ -60,13 +75,14 @@ SELECT * FROM ten_dim_points WHERE dim1 = 1.0 AND dim2 = 2.0;
 范围查询
 面向海量查询时，WhuDatabase在所设计的索引上会训练小型自动化选择搜寻策略模型，选择最优的查询策略并并行处理提高查询效率。
 单次查询服从SQLite查询方法。
+
 ```java
 SELECT * FROM ten_dim_points WHERE dim1 BETWEEN 1.0 AND 2.0 AND dim2 BETWEEN 2.0 AND 3.0;
 ```
 
 k-最近邻
 
-面对k-最近邻查询，需自身定义查询的距离计算公式（如欧式距离），并进行查询。当面对小数据集时，采用遍历的方式寻找数据点。当面对大数据且稳定的k近邻查询的时，我们构建多叉平衡KD树改进查询效率。
+面对k-最近邻查询，需自身定义查询的距离计算公式（如欧式距离），再进行查询。当面对小数据集时，采用遍历的方式寻找目标值。当面对大数据时，我们构建多叉平衡KD树改进查询效率。
 
 ```java
 // 求距离(3, 3, 3, 3, 3, 3, 3, 3, 3, 3)最近的点
@@ -120,9 +136,10 @@ FROM ten_dim_points
 ORDER BY dim1 ASC, dim2 DESC;
 ```
 
-## 示例二
+#### 示例二
 多维向量的处理与计算，以三维向量为例。
-### 创建表和插入数据
+
+**创建表和插入数据**
 
 ```java
 // 创建表格
@@ -139,7 +156,8 @@ INSERT INTO vectors (x, y, z) VALUES
 (4.0, 5.0, 6.0),
 (7.0, 8.0, 9.0);
 ```
-### 查询向量数据
+**查询向量数据**
+
 ```java
 // 查询所有向量
 SELECT * FROM vectors;
@@ -147,7 +165,8 @@ SELECT * FROM vectors;
 // 查询特定条件的向量
 SELECT * FROM vectors WHERE x > 4;
 ```
-### 计算
+**计算**
+
 计算向量的模（长度）
 
 ```java
@@ -172,9 +191,10 @@ FROM vectors1 v1
 JOIN vectors2 v2 ON v1.id = v2.id;
 ```
 
-## 示例三
+#### 示例三
 数据的统计与聚合，以商品的售价为例。
-### 创建表和插入数据
+
+**创建表和插入数据**
 
 ```java
 // 创建表格
@@ -192,7 +212,7 @@ INSERT INTO sales (product_id, amount) VALUES
 (2, 250.0),
 (1, 300.0);
 ```
-### 数据处理并返回
+**数据处理并返回**
 
 ```java
 SELECT 
@@ -206,9 +226,11 @@ GROUP BY
     product_id;
 ```
 
-## 示例四
-面向时空短向量生成的几何对象的查询和处理，WhuDatabase数据库支持自定义的查询
-### 创建表和插入数据
+#### 示例四
+面向时空短向量生成的几何对象的查询和处理，WhuDatabase数据库支持自定义的查询。
+
+**创建表和插入数据**
+
 ```java
 // 创建表格
 CREATE TABLE places (
@@ -228,13 +250,13 @@ INSERT INTO places (name, geom) VALUES ('Line B', GeomFromText('LINESTRING(0 2, 
 // 插入多边形数据
 INSERT INTO places (name, geom) VALUES ('Polygon A', GeomFromText('POLYGON((0 0, 0 3, 3 3, 3 0, 0 0))', 4326));
 ```
-### 基本查询
+**基本查询**
 
 查询所有数据并显示几何对象的文本表示
 ```java
 SELECT id, name, AsText(geom) FROM places;
 ```
-### 空间查询
+**空间查询**
 
 查询包含特定点的几何对象
 ```java
@@ -265,8 +287,9 @@ SELECT Distance(
 // 距离特定点一定范围内的几何对象
 SELECT name FROM places WHERE Distance(geom, GeomFromText('POINT(1 1)', 4326)) < 2.0;
 ```
-### 几何操作
-加快数据分析，计算，和机器学习模型训练运算效率
+**几何操作**
+
+旨在加快时空数据的搜索效率，服务于数据分析和机器学习模型训练。
 
 ```java
 SELECT id, name, AsText(Buffer(geom, 1.0)) AS buffered_geom FROM places;
@@ -276,8 +299,11 @@ SELECT id, name, AsText(Buffer(geom, 1.0)) AS buffered_geom FROM places;
 ```java
 SELECT id, name, AsText(ConvexHull(geom)) AS convex_hull_geom FROM places;
 ```
-# 其他常见问题
-## 什么是 WhuDatabase？
+
+
+## 其他常见问题
+
+### 什么是 WhuDatabase？
 简单来说：WhuDatabase= 查询效率改进的SQLite + 高效大规模的向量搜索引擎 + 高级地理空间支持。
-## 它使用 JDBC 吗？
+### 它使用 JDBC 吗？
 否，它使用cursors - 建议使用轻量级方法来访问 Android 平台中使用的 SQL，而不是更重的 JDBC。
